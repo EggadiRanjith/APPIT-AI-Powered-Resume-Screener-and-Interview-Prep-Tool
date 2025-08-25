@@ -34,14 +34,14 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-black"></div>
+      <div className="min-h-screen flex items-center justify-center bg-hero-gradient">
+        <div className="loading w-32 h-32 rounded-full"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-hero-gradient">
       <Head>
         <title>ResumeAI - AI-Powered Resume Screening</title>
         <meta name="description" content="AI-powered resume screening and analysis" />

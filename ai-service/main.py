@@ -235,8 +235,7 @@ def analyze_resume_job_fit(resume_text, job_description):
             "detailed_feedback": f"Analysis failed due to technical error: {str(e)}"
         }
 
-# Initialize AI service
-ai_service = AIService()
+# AI service functions are defined above
 
 @app.route("/")
 def root():

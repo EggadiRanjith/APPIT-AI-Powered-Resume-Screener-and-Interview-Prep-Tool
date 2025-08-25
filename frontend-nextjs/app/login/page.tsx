@@ -54,64 +54,73 @@ export default function LoginPage() {
   return (
     <PublicRoute>
       <RootLayout>
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div>
-            <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-              Sign in to your account
-            </h2>
-            {error && (
-              <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                {error}
+        <div className="min-h-screen flex items-center justify-center bg-hero-gradient py-12">
+          <div className="max-w-md w-full space-y-8">
+            <div className="glass-card p-8 rounded-xl shadow-premium-lg">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-primary-black mb-8">Sign In</h2>
               </div>
-            )}
-          </div>
-          <form className="mt-8 space-y-6" onSubmit={onSubmit}>
-            <div className="rounded-md shadow-sm -space-y-px">
-              <div>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-black focus:border-black focus:z-10 sm:text-sm"
-                  placeholder="Email address"
-                  value={email}
-                  onChange={onChange}
-                />
-              </div>
-              <div>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-black focus:border-black focus:z-10 sm:text-sm"
-                  placeholder="Password"
-                  value={password}
-                  onChange={onChange}
-                />
-              </div>
-            </div>
+              <form className="space-y-6" onSubmit={onSubmit}>
+                {error && (
+                  <div className="bg-light-gray border border-medium-gray text-charcoal px-4 py-3 rounded-lg">
+                    ⚠️ {error}
+                  </div>
+                )}
+                
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-charcoal mb-2">
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={onChange}
+                    className="form-input"
+                    placeholder="Enter your email"
+                  />
+                </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                  loading 
-                    ? 'text-gray-400 bg-gray-300 cursor-not-allowed' 
-                    : 'text-white bg-black hover:bg-gray-900 focus:ring-black'
-                }`}
-              >
-                {loading ? 'Signing in...' : 'Sign in'}
-              </button>
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-charcoal mb-2">
+                    Password
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={onChange}
+                    className="form-input"
+                    placeholder="Enter your password"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`btn-primary w-full py-3 px-4 shadow-premium-md interactive-element ${
+                    loading ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {loading ? 'Signing In...' : 'Sign In'}
+                </button>
+              </form>
+
+              <div className="text-center mt-6">
+                <p className="text-sm text-medium-gray">
+                  Don't have an account?{' '}
+                  <a href="/signup" className="font-medium text-primary-black hover:text-charcoal transition-colors">
+                    Sign up
+                  </a>
+                </p>
+              </div>
             </div>
-          </form>
+          </div>
         </div>
-      </div>
       </RootLayout>
     </PublicRoute>
   )
