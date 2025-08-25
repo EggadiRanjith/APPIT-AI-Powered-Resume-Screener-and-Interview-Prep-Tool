@@ -1,3 +1,8 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import Head from 'next/head'
 import Header from '@/components/Header'
 import Hero from '@/components/Hero'
@@ -8,6 +13,33 @@ import About from '@/components/About'
 import Footer from '@/components/Footer'
 
 export default function Home() {
+  const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
+
+  // Handle hash navigation for authenticated users
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      const hash = window.location.hash;
+      if (hash) {
+        // If there's a hash, scroll to that section after a brief delay
+        setTimeout(() => {
+          const element = document.getElementById(hash.substring(1));
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 100);
+      }
+    }
+  }, [isAuthenticated, loading, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-black"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <Head>

@@ -2,12 +2,22 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const router = useRouter()
+  const { isAuthenticated, user, logout } = useAuth()
 
   const handleNavigation = (sectionId: string) => {
+    // If not on home page, navigate to home first
+    if (window.location.pathname !== '/') {
+      router.push(`/#${sectionId}`)
+      setIsMenuOpen(false)
+      return
+    }
+    
+    // If on home page, scroll to section
     const element = document.getElementById(sectionId)
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
@@ -24,45 +34,90 @@ export default function Header() {
           </Link>
 
           <nav className="hidden md:flex space-x-8">
-            <Link 
-              href="/" 
-              className="text-gray-600 hover:text-black"
-            >
-              Home
-            </Link>
-            <button 
-              onClick={() => handleNavigation('features')}
-              className="text-gray-600 hover:text-black"
-            >
-              Features
-            </button>
-            <button 
-              onClick={() => handleNavigation('howItWorks')}
-              className="text-gray-600 hover:text-black"
-            >
-              How It Works
-            </button>
-            <button 
-              onClick={() => handleNavigation('about')}
-              className="text-gray-600 hover:text-black"
-            >
-              About
-            </button>
+            {isAuthenticated ? (
+              <>
+                <Link 
+                  href="/" 
+                  className="text-gray-600 hover:text-black"
+                >
+                  Home
+                </Link>
+                <Link 
+                  href="/dashboard" 
+                  className="text-gray-600 hover:text-black"
+                >
+                  Dashboard
+                </Link>
+                <Link 
+                  href="/analyze" 
+                  className="text-gray-600 hover:text-black"
+                >
+                  Analyze Resume
+                </Link>
+                <Link 
+                  href="/analysis-history" 
+                  className="text-gray-600 hover:text-black"
+                >
+                  History
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link 
+                  href="/" 
+                  className="text-gray-600 hover:text-black"
+                >
+                  Home
+                </Link>
+                <button 
+                  onClick={() => handleNavigation('features')}
+                  className="text-gray-600 hover:text-black"
+                >
+                  Features
+                </button>
+                <button 
+                  onClick={() => handleNavigation('howItWorks')}
+                  className="text-gray-600 hover:text-black"
+                >
+                  How It Works
+                </button>
+                <button 
+                  onClick={() => handleNavigation('about')}
+                  className="text-gray-600 hover:text-black"
+                >
+                  About
+                </button>
+              </>
+            )}
           </nav>
 
           <div className="hidden md:flex space-x-4">
-            <Link 
-              href="/login" 
-              className="px-4 py-2 text-gray-600 hover:text-black"
-            >
-              Login
-            </Link>
-            <Link 
-              href="/signup" 
-              className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900"
-            >
-              Sign Up
-            </Link>
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-3">
+                <span className="text-gray-600">Hi, {user?.name}</span>
+                <button 
+                  onClick={logout}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link 
+                  href="/login" 
+                  className="px-4 py-2 text-gray-600 hover:text-black"
+                >
+                  Login
+                </Link>
+                <Link 
+                  href="/signup" 
+                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
 
           <button
@@ -80,45 +135,92 @@ export default function Header() {
       {isMenuOpen && (
         <div className="md:hidden border-t border-gray-100 bg-white">
           <div className="px-4 py-2 space-y-1">
-            <Link 
-              href="/"
-              className="block py-2 text-gray-600 hover:text-black"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Home
-            </Link>
-            <button 
-              onClick={() => handleNavigation('features')}
-              className="block w-full text-left py-2 text-gray-600 hover:text-black"
-            >
-              Features
-            </button>
-            <button 
-              onClick={() => handleNavigation('howItWorks')}
-              className="block w-full text-left py-2 text-gray-600 hover:text-black"
-            >
-              How It Works
-            </button>
-            <button 
-              onClick={() => handleNavigation('about')}
-              className="block w-full text-left py-2 text-gray-600 hover:text-black"
-            >
-              About
-            </button>
-            <Link 
-              href="/login"
-              className="block py-2 text-gray-600 hover:text-black"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Login
-            </Link>
-            <Link 
-              href="/signup"
-              className="block py-2 text-gray-600 hover:text-black"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Sign Up
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link 
+                  href="/"
+                  className="block py-2 text-gray-600 hover:text-black"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Home
+                </Link>
+                <Link 
+                  href="/dashboard"
+                  className="block py-2 text-gray-600 hover:text-black"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                <Link 
+                  href="/analyze"
+                  className="block py-2 text-gray-600 hover:text-black"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Analyze Resume
+                </Link>
+                <Link 
+                  href="/analysis-history"
+                  className="block py-2 text-gray-600 hover:text-black"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  History
+                </Link>
+                <div className="block py-2 text-gray-600">
+                  Hi, {user?.name}
+                </div>
+                <button 
+                  onClick={() => {
+                    logout();
+                    setIsMenuOpen(false);
+                  }}
+                  className="block w-full text-left py-2 text-red-600 hover:text-red-700"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link 
+                  href="/"
+                  className="block py-2 text-gray-600 hover:text-black"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Home
+                </Link>
+                <button 
+                  onClick={() => handleNavigation('features')}
+                  className="block w-full text-left py-2 text-gray-600 hover:text-black"
+                >
+                  Features
+                </button>
+                <button 
+                  onClick={() => handleNavigation('howItWorks')}
+                  className="block w-full text-left py-2 text-gray-600 hover:text-black"
+                >
+                  How It Works
+                </button>
+                <button 
+                  onClick={() => handleNavigation('about')}
+                  className="block w-full text-left py-2 text-gray-600 hover:text-black"
+                >
+                  About
+                </button>
+                <Link 
+                  href="/login"
+                  className="block py-2 text-gray-600 hover:text-black"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Login
+                </Link>
+                <Link 
+                  href="/signup"
+                  className="block py-2 text-gray-600 hover:text-black"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

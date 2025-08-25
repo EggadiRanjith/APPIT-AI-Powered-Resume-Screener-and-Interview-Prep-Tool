@@ -1,4 +1,29 @@
+'use client';
+
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+
 export default function Hero() {
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  const handleAnalyzeClick = () => {
+    if (isAuthenticated) {
+      router.push('/analyze');
+    } else {
+      router.push('/login?redirect=/analyze');
+    }
+  };
+
+  const handleHistoryClick = () => {
+    if (isAuthenticated) {
+      router.push('/analysis-history');
+    } else {
+      router.push('/login?redirect=/analysis-history');
+    }
+  };
+
   return (
     <section className="relative min-h-screen flex items-center hero-gradient">
       <div className="absolute inset-0 overflow-hidden">
@@ -18,14 +43,26 @@ export default function Hero() {
           </p>
 
           <div className="mt-12 flex flex-col sm:flex-row justify-center gap-6">
-            <button className="group glass-card px-8 py-4 rounded-xl text-black hover:bg-black hover:text-white transition-all duration-500">
-              Upload Resume & Analyze
+            <button 
+              onClick={handleAnalyzeClick}
+              className="group glass-card px-8 py-4 rounded-xl text-black hover:bg-black hover:text-white transition-all duration-500"
+            >
+              {isAuthenticated ? 'Upload Resume & Analyze' : 'Get Started - Analyze Resume'}
               <span className="ml-2 inline-block transition-transform group-hover:translate-x-1">→</span>
             </button>
-            <button className="px-8 py-4 rounded-xl border-2 border-black text-black hover:bg-black hover:text-white transition-all duration-500">
-              Check Previous Results
+            <button 
+              onClick={handleHistoryClick}
+              className="px-8 py-4 rounded-xl border-2 border-black text-black hover:bg-black hover:text-white transition-all duration-500"
+            >
+              {isAuthenticated ? 'Check Previous Results' : 'View Sample Results'}
             </button>
           </div>
+
+          {!isAuthenticated && (
+            <p className="mt-6 text-sm text-gray-500">
+              Already have an account? <Link href="/login" className="text-black hover:underline font-medium">Sign in</Link>
+            </p>
+          )}
         </div>
       </div>
     </section>

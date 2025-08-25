@@ -1,25 +1,27 @@
-import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import type { Metadata } from "next"
+import { Inter } from "next/font/google";
+import { AuthProvider } from "@/contexts/AuthContext";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: '--font-inter' });
-const jakarta = Plus_Jakarta_Sans({ 
-  subsets: ["latin"],
-  variable: '--font-jakarta'
-});
+const inter = Inter({ subsets: ["latin"] })
 
-export const metadata = {
-  title: "ResumeAI - AI-Powered Resume Screening",
-  description: "Advanced AI-powered resume screening and analysis",
-};
+export const metadata: Metadata = {
+  title: "APPIT - AI Resume Screener",
+  description: "AI-Powered Resume Screener and Interview Prep Tool",
+}
 
-export default function Layout({
+export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${jakarta.variable}`}>
-      <body className="font-sans antialiased">{children}</body>
+    <html lang="en">
+      <body className={inter.className}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
-  );
+  )
 }
