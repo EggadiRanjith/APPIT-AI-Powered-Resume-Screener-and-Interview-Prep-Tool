@@ -1,12 +1,106 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import RootLayout from '@/components/layouts/RootLayout';
 import Link from 'next/link';
+import axios from 'axios';
+
+interface DashboardStats {
+  totalAnalyses: number;
+  averageScore: number;
+  bestScore: number;
+  thisMonth: number;
+}
+
+interface RecentAnalysis {
+  _id: string;
+  resumeFileName: string;
+  fitScore: number;
+  createdAt: string;
+}
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const [stats, setStats] = useState<DashboardStats>({
+    totalAnalyses: 0,
+    averageScore: 0,
+    bestScore: 0,
+    thisMonth: 0
+  });
+  const [recentAnalyses, setRecentAnalyses] = useState<RecentAnalysis[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Fetch analysis history to calculate stats
+      const response = await axios.get('http://localhost:8000/api/analysis/history?page=1&limit=100', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const analyses = response.data.analyses || [];
+      
+      // Calculate stats
+      const totalAnalyses = analyses.length;
+      const averageScore = totalAnalyses > 0 
+        ? Math.round(analyses.reduce((sum: number, a: any) => sum + a.fitScore, 0) / totalAnalyses)
+        : 0;
+      const bestScore = totalAnalyses > 0 
+        ? Math.max(...analyses.map((a: any) => a.fitScore))
+        : 0;
+      
+      // Calculate this month's analyses
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      const thisMonth = analyses.filter((a: any) => {
+        const analysisDate = new Date(a.createdAt);
+        return analysisDate.getMonth() === currentMonth && analysisDate.getFullYear() === currentYear;
+      }).length;
+
+      setStats({
+        totalAnalyses,
+        averageScore,
+        bestScore,
+        thisMonth
+      });
+
+      // Set recent analyses (last 5)
+      setRecentAnalyses(analyses.slice(0, 5));
+      
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  if (loading) {
+    return (
+      <ProtectedRoute>
+        <RootLayout>
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-black"></div>
+          </div>
+        </RootLayout>
+      </ProtectedRoute>
+    );
+  }
+
   return (
     <ProtectedRoute>
       <RootLayout>
@@ -19,10 +113,10 @@ export default function DashboardPage() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {[
-            { label: 'Total Analyses', value: '0', color: 'text-blue-600' },
-            { label: 'Average Score', value: '-', color: 'text-green-600' },
-            { label: 'Best Score', value: '-', color: 'text-purple-600' },
-            { label: 'This Month', value: '0', color: 'text-orange-600' }
+            { label: 'Total Analyses', value: stats.totalAnalyses.toString(), color: 'text-blue-600' },
+            { label: 'Average Score', value: stats.averageScore > 0 ? `${stats.averageScore}%` : '-', color: 'text-green-600' },
+            { label: 'Best Score', value: stats.bestScore > 0 ? `${stats.bestScore}%` : '-', color: 'text-purple-600' },
+            { label: 'This Month', value: stats.thisMonth.toString(), color: 'text-orange-600' }
           ].map((stat) => (
             <div key={stat.label} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
               <p className="text-sm text-gray-600">{stat.label}</p>
@@ -79,12 +173,36 @@ export default function DashboardPage() {
               </Link>
             </div>
             <div className="space-y-4">
-              <div className="text-center py-8 text-gray-500">
-                <p>No recent activity</p>
-                <Link href="/analyze" className="text-black hover:underline mt-2 inline-block">
-                  Start your first analysis
-                </Link>
-              </div>
+              {recentAnalyses.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No recent activity</p>
+                  <Link href="/analyze" className="text-black hover:underline mt-2 inline-block">
+                    Start your first analysis
+                  </Link>
+                </div>
+              ) : (
+                recentAnalyses.map((analysis) => (
+                  <div key={analysis._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900">{analysis.resumeFileName}</p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(analysis.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <span className={`font-semibold ${getScoreColor(analysis.fitScore)}`}>
+                        {analysis.fitScore}%
+                      </span>
+                      <Link
+                        href={`/analysis/${analysis._id}`}
+                        className="text-blue-600 hover:text-blue-800 text-sm"
+                      >
+                        View
+                      </Link>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 

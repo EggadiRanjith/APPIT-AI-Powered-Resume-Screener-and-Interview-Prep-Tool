@@ -3,16 +3,19 @@ const natural = require('natural');
 
 class ResumeAnalysisService {
   constructor() {
-    this.aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8001';
+    this.aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
   }
   static extractKeywords(text) {
-    // Convert to lowercase and remove special characters
-    const cleanText = text.toLowerCase().replace(/[^\w\s]/g, ' ');
+    // Convert to lowercase and clean text
+    const cleanText = text.toLowerCase()
+      .replace(/[^\w\s+#.-]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
     
-    // Tokenize
-    const tokens = natural.WordTokenizer().tokenize(cleanText);
+    // Split into words
+    const words = cleanText.split(' ');
     
-    // Remove stop words
+    // Enhanced stop words list
     const stopWords = new Set([
       'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
       'from', 'up', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below',
@@ -21,24 +24,40 @@ class ResumeAnalysisService {
       'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your',
       'his', 'her', 'its', 'our', 'their', 'this', 'that', 'these', 'those', 'am', 'work', 'working',
       'experience', 'years', 'year', 'including', 'using', 'used', 'use', 'also', 'well', 'good',
-      'great', 'excellent', 'strong', 'skills', 'skill', 'ability', 'able', 'knowledge'
+      'great', 'excellent', 'strong', 'skills', 'skill', 'ability', 'able', 'knowledge', 'job',
+      'role', 'position', 'company', 'team', 'project', 'projects', 'development', 'developer',
+      'software', 'application', 'applications', 'system', 'systems', 'technology', 'technologies'
     ]);
     
-    // Filter out stop words and short words
-    const keywords = tokens
-      .filter(token => token && token.length > 2 && !stopWords.has(token))
-      .filter(token => /^[a-zA-Z+#.]+$/.test(token)); // Allow letters, +, #, . for tech terms
+    // Technical skills and important keywords to prioritize
+    const techKeywords = new Set([
+      'javascript', 'python', 'java', 'react', 'angular', 'vue', 'node', 'nodejs', 'express',
+      'mongodb', 'sql', 'mysql', 'postgresql', 'html', 'css', 'typescript', 'php', 'ruby',
+      'go', 'rust', 'swift', 'kotlin', 'flutter', 'dart', 'c++', 'c#', 'aws', 'azure', 'gcp',
+      'docker', 'kubernetes', 'jenkins', 'git', 'github', 'gitlab', 'api', 'rest', 'graphql',
+      'microservices', 'agile', 'scrum', 'devops', 'ci/cd', 'testing', 'junit', 'jest',
+      'redux', 'spring', 'django', 'flask', 'laravel', 'rails', 'bootstrap', 'tailwind'
+    ]);
     
-    // Count frequency
+    // Filter and process keywords
+    const keywords = words
+      .filter(word => word && word.length > 2)
+      .filter(word => !stopWords.has(word))
+      .filter(word => /^[a-zA-Z0-9+#.-]+$/.test(word))
+      .map(word => word.toLowerCase());
+    
+    // Count frequency and prioritize tech keywords
     const frequency = {};
     keywords.forEach(keyword => {
-      frequency[keyword] = (frequency[keyword] || 0) + 1;
+      const weight = techKeywords.has(keyword) ? 2 : 1; // Give tech keywords higher weight
+      frequency[keyword] = (frequency[keyword] || 0) + weight;
     });
     
-    // Return sorted by frequency
+    // Return sorted by frequency, prioritizing meaningful keywords
     return Object.keys(frequency)
       .sort((a, b) => frequency[b] - frequency[a])
-      .slice(0, 50); // Top 50 keywords
+      .filter(keyword => keyword.length > 2)
+      .slice(0, 20); // Top 20 meaningful keywords
   }
 
   static calculateFitScore(resumeKeywords, jobKeywords) {
@@ -200,7 +219,7 @@ class ResumeAnalysisService {
     const cleanText = text.toLowerCase().replace(/[^\w\s]/g, ' ');
     
     // Tokenize
-    const tokens = natural.WordTokenizer().tokenize(cleanText);
+    const tokens = new natural.WordTokenizer().tokenize(cleanText);
     
     // Remove stop words
     const stopWords = new Set([
